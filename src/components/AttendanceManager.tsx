@@ -54,34 +54,58 @@ export const AttendanceManager = () => {
         const worksheet = workbook.Sheets[sheetName];
         const jsonData = XLSX.utils.sheet_to_json(worksheet) as StudentRecord[];
 
-        // Validate required columns
+        // Validate required columns with case-insensitive and trimmed matching
         const requiredColumns = ['unit desc', 'course offer desc', 'client refexternal', 
                                 'client first name', 'client last name', 'client email'];
         
         if (jsonData.length > 0) {
           const firstRow = jsonData[0];
-          const missingColumns = requiredColumns.filter(col => !(col in firstRow));
+          const availableColumns = Object.keys(firstRow).map(col => col.toLowerCase().trim());
+          
+          console.log('Available columns:', availableColumns);
+          console.log('Required columns:', requiredColumns);
+          
+          const missingColumns = requiredColumns.filter(col => 
+            !availableColumns.includes(col.toLowerCase().trim())
+          );
           
           if (missingColumns.length > 0) {
             toast({
               title: "Missing columns",
-              description: `The following required columns are missing: ${missingColumns.join(', ')}`,
+              description: `Missing: ${missingColumns.join(', ')}. Available: ${Object.keys(firstRow).join(', ')}`,
               variant: "destructive",
             });
             return;
           }
+          
+          // Normalize column names to handle case sensitivity and spaces
+          const normalizedData = jsonData.map(row => {
+            const normalizedRow: any = {};
+            Object.keys(row).forEach(key => {
+              const normalizedKey = key.toLowerCase().trim();
+              const matchingRequiredCol = requiredColumns.find(req => 
+                req.toLowerCase().trim() === normalizedKey
+              );
+              if (matchingRequiredCol) {
+                normalizedRow[matchingRequiredCol] = row[key];
+              } else {
+                normalizedRow[key] = row[key]; // Keep original key for other columns
+              }
+            });
+            return normalizedRow;
+          });
+          
+          setEnrollmentData(normalizedData);
+        
+          // Extract unique subjects from "unit desc" column
+          const uniqueSubjects = [...new Set(normalizedData.map(record => record['unit desc']))].filter(Boolean);
+          setSubjects(uniqueSubjects);
+          
+          toast({
+            title: "File uploaded successfully",
+            description: `Loaded ${normalizedData.length} records with ${uniqueSubjects.length} subjects`,
+          });
         }
-
-        setEnrollmentData(jsonData);
-        
-        // Extract unique subjects from "unit desc" column
-        const uniqueSubjects = [...new Set(jsonData.map(record => record['unit desc']))].filter(Boolean);
-        setSubjects(uniqueSubjects);
-        
-        toast({
-          title: "File uploaded successfully",
-          description: `Loaded ${jsonData.length} records with ${uniqueSubjects.length} subjects`,
-        });
       } catch (error) {
         toast({
           title: "Error reading file",
