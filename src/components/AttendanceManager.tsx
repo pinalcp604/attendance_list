@@ -28,6 +28,8 @@ export const AttendanceManager = () => {
   const [filteredStudents, setFilteredStudents] = useState<StudentRecord[]>([]);
   const [fileName, setFileName] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [enrollmentSearchTerm, setEnrollmentSearchTerm] = useState<string>('');
+  const [enrollmentSearchResults, setEnrollmentSearchResults] = useState<StudentRecord[]>([]);
   const { toast } = useToast();
 
   const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
@@ -144,6 +146,23 @@ export const AttendanceManager = () => {
     
     setFilteredStudents(searchFiltered);
   }, [enrollmentData, selectedSubject]);
+
+  const handleEnrollmentSearch = useCallback((term: string) => {
+    setEnrollmentSearchTerm(term);
+    
+    if (!term.trim()) {
+      setEnrollmentSearchResults([]);
+      return;
+    }
+
+    const searchResults = enrollmentData.filter(student =>
+      student['client first name']?.toString().toLowerCase().includes(term.toLowerCase()) ||
+      student['client last name']?.toString().toLowerCase().includes(term.toLowerCase()) ||
+      student['client refexternal']?.toString().toLowerCase().includes(term.toLowerCase())
+    );
+    
+    setEnrollmentSearchResults(searchResults);
+  }, [enrollmentData]);
 
   const exportAttendanceList = useCallback(() => {
     if (!filteredStudents.length) {
@@ -281,6 +300,59 @@ export const AttendanceManager = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Check Student Enrollment */}
+        {enrollmentData.length > 0 && (
+          <Card className="shadow-soft">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Search className="h-5 w-5 text-primary" />
+                Check Student Enrollment
+              </CardTitle>
+              <CardDescription>
+                Search for students by first name, last name, or reference
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="enrollment-search" className="block text-sm font-medium mb-2">
+                    Search Students
+                  </Label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="enrollment-search"
+                      type="text"
+                      placeholder="Search by first name, last name, or reference..."
+                      value={enrollmentSearchTerm}
+                      onChange={(e) => handleEnrollmentSearch(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+                
+                {enrollmentSearchResults.length > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-sm font-medium">Search Results</h4>
+                      <Badge variant="secondary" className="bg-primary-soft">
+                        {enrollmentSearchResults.length} found
+                      </Badge>
+                    </div>
+                    <AttendanceTable students={enrollmentSearchResults} />
+                  </div>
+                )}
+                
+                {enrollmentSearchTerm && enrollmentSearchResults.length === 0 && (
+                  <div className="text-center py-4 text-muted-foreground">
+                    No students found matching "{enrollmentSearchTerm}"
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Subject Selection */}
         {subjects.length > 0 && (
