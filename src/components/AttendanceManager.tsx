@@ -182,6 +182,49 @@ export const AttendanceManager = () => {
     });
   }, [filteredStudents, selectedSubject, toast]);
 
+  const generateAllAttendanceLists = useCallback(() => {
+    if (!enrollmentData.length || !subjects.length) {
+      toast({
+        title: "No data available",
+        description: "Please upload an enrollment file first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const wb = XLSX.utils.book_new();
+
+    subjects.forEach(subject => {
+      const subjectStudents = enrollmentData.filter(record => record['unit desc'] === subject);
+      
+      const exportData = subjectStudents.map(student => ({
+        'Course': student['course offer desc'],
+        'Reference': student['client refexternal'],
+        'First Name': student['client first name'],
+        'Last Name': student['client last name'],
+        'Email': student['client email'],
+        'Alternative Email': student['client alternative email'] || '',
+        'Mobile': student['client mobile'] || '',
+        'Subject': student['unit desc'],
+        'Present': '',
+        'Absent': '',
+        'Notes': ''
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(exportData);
+      const sheetName = subject.substring(0, 31).replace(/[^a-zA-Z0-9\s]/g, ''); // Excel sheet name limit
+      XLSX.utils.book_append_sheet(wb, ws, sheetName);
+    });
+
+    const fileName = `All_Attendance_Lists_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+
+    toast({
+      title: "All attendance lists generated",
+      description: `Downloaded ${fileName} with ${subjects.length} sheets`,
+    });
+  }, [enrollmentData, subjects, toast]);
+
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
@@ -203,25 +246,36 @@ export const AttendanceManager = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col sm:flex-row gap-4 items-center">
-              <div className="flex-1 w-full">
-                <Label htmlFor="file-upload" className="block text-sm font-medium mb-2">
-                  Select Excel File
-                </Label>
-                <Input
-                  id="file-upload"
-                  type="file"
-                  accept=".xlsx,.xls"
-                  onChange={handleFileUpload}
-                  className="cursor-pointer"
-                />
+            <div className="space-y-4">
+              <div className="flex flex-col sm:flex-row gap-4 items-center">
+                <div className="flex-1 w-full">
+                  <Label htmlFor="file-upload" className="block text-sm font-medium mb-2">
+                    Select Excel File
+                  </Label>
+                  <Input
+                    id="file-upload"
+                    type="file"
+                    accept=".xlsx,.xls"
+                    onChange={handleFileUpload}
+                    className="cursor-pointer"
+                  />
+                </div>
+                {fileName && (
+                  <div className="flex items-center gap-2">
+                    <FileSpreadsheet className="h-4 w-4 text-success" />
+                    <Badge variant="outline" className="bg-success-soft text-success-foreground">
+                      {fileName}
+                    </Badge>
+                  </div>
+                )}
               </div>
-              {fileName && (
-                <div className="flex items-center gap-2">
-                  <FileSpreadsheet className="h-4 w-4 text-success" />
-                  <Badge variant="outline" className="bg-success-soft text-success-foreground">
-                    {fileName}
-                  </Badge>
+              
+              {subjects.length > 0 && (
+                <div className="flex justify-center pt-2">
+                  <Button onClick={generateAllAttendanceLists} className="gap-2" size="lg">
+                    <FileSpreadsheet className="h-4 w-4" />
+                    Generate Attendance List
+                  </Button>
                 </div>
               )}
             </div>
