@@ -22,8 +22,7 @@ const Index = () => {
               Generate attendance lists from enrollment data
             </h1>
             <p className="text-xl md:text-2xl mb-8 text-white/90 animate-fade-in" style={{ animationDelay: '0.2s' }}>
-              Transform your enrollment spreadsheets into organized attendance sheets for every subject, 
-              streamlining your educational management process.
+              
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center animate-scale-in" style={{ animationDelay: '0.4s' }}>
               <Button asChild size="lg" className="bg-white text-primary hover:bg-white/90 shadow-hero text-lg px-8 py-6">
@@ -31,11 +30,7 @@ const Index = () => {
                   Get Started <ArrowRight className="h-5 w-5" />
                 </Link>
               </Button>
-              <Button asChild variant="outline" size="lg" className="border-white/30 text-white hover:bg-white/10 text-lg px-8 py-6">
-                <Link to="#features">
-                  Learn More
-                </Link>
-              </Button>
+             
             </div>
           </div>
         </div>
@@ -47,15 +42,7 @@ const Index = () => {
       {/* Features Section */}
       <section id="features" className="py-20 bg-background">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold mb-6 text-foreground">
-              Powerful Features for Modern Education
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Our attendance management system transforms complex enrollment data into organized, 
-              subject-specific attendance sheets with just a few clicks.
-            </p>
-          </div>
+          
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
             <Card className="shadow-soft hover:shadow-medium transition-all duration-300 animate-fade-in border-border">
@@ -135,13 +122,7 @@ const Index = () => {
           <div className="text-center">
             <Card className="max-w-4xl mx-auto shadow-medium border-primary/20">
               <CardContent className="p-12">
-                <h3 className="text-2xl md:text-3xl font-bold mb-4 text-foreground">
-                  Ready to streamline your attendance management?
-                </h3>
-                <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-                  Start generating professional attendance sheets from your enrollment data today. 
-                  No setup required, just upload and go.
-                </p>
+                
                 <Button asChild size="lg" className="shadow-soft text-lg px-8 py-6">
                   <Link to="/attendance" className="flex items-center gap-2">
                     Start Creating Attendance Lists <ArrowRight className="h-5 w-5" />
